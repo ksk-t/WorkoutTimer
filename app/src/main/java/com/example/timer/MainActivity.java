@@ -51,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
                     .getBoolean("wasRunning");
         }
 
-
-
         repCount = repCountStart;
         setRepText(repCount);
 
@@ -120,24 +118,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Start the stopwatch running
-    // when the Start button is clicked.
-    // Below method gets called
-    // when the Start button is clicked.
-    public void onClickStart(android.view.View view)
-    {
-        running = true;
-    }
-
-    // Stop the stopwatch running
-    // when the Stop button is clicked.
-    // Below method gets called
-    // when the Stop button is clicked.
-    public void onClickStop(android.view.View view)
-    {
-        running = false;
-    }
-
     // Reset the stopwatch when
     // the Reset button is clicked.
     // Below method gets called
@@ -200,10 +180,8 @@ public class MainActivity extends AppCompatActivity {
 
             public void run()
             {
-
-
                 // Set the text view text.
-                timeView.setText(String.format("%02d", seconds));
+                timeView.setText(String.format(Locale.getDefault(),"%02d", seconds));
 
                 if (seconds == 0)
                 {
@@ -219,8 +197,6 @@ public class MainActivity extends AppCompatActivity {
                             setRepText(repCount);
                         }
                     }
-
-
                 }else
                 {
                     setActivityBackgroundColor(Color.RED);
