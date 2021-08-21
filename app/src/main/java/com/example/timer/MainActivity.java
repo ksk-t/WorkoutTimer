@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     // on the stopwatch.
     private int seconds = 0;
     private int breakTime = 15;
-    private int restTime = 60;
+    private int restTime = 61;
     private int repCountStart = 3;
     private int repCountEnd = 7;
     private int repCount = 0;
