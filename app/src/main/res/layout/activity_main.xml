@@ -15,6 +15,16 @@ tools:context=".MainActivity"
         android:layout_gravity="center"
         android:onClick="onClickReset">
 
+        <ProgressBar
+            android:id="@+id/progress_circle"
+            android:layout_height="300dp"
+            android:layout_width="300dp"
+            android:layout_gravity="center"
+            android:indeterminateOnly="false"
+            android:progressDrawable="@drawable/circle"
+            tools:progress="60"
+            android:max="1000">
+        </ProgressBar>
         <TextView
             android:id="@+id/time_view"
             android:layout_width="wrap_content"
@@ -22,7 +32,7 @@ tools:context=".MainActivity"
             android:layout_gravity="center"
 
             android:textAppearance="@android:style/TextAppearance.Large"
-            android:textSize="200sp"
+            android:textSize="150sp"
             android:onClick="onClickReset"/>
 
         <TextView

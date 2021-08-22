@@ -4,57 +4,46 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import java.util.Locale;
 import android.view.View;
+import android.media.MediaPlayer;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Use seconds, running and wasRunning respectively
-    // to record the number of seconds passed,
-    // whether the stopwatch is running and
-    // whether the stopwatch was running
-    // before the activity was paused.
-
     // Number of seconds displayed
     // on the stopwatch.
-    private int seconds = 0;
     private int breakTime = 15;
     private int restTime = 60;
     private int repCountStart = 3;
     private int repCountEnd = 7;
     private int repCount = 0;
 
-    private boolean wasRunning;
-
-    private boolean running;
+    private MyCountDownTimer countDownTimer;
+    MediaPlayer beepSound321;
+    MediaPlayer beepSound0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (savedInstanceState != null) {
-
-            // Get the previous state of the stopwatch
-            // if the activity has been
-            // destroyed and recreated.
-            seconds
-                    = savedInstanceState
-                    .getInt("seconds");
-            running
-                    = savedInstanceState
-                    .getBoolean("running");
-            wasRunning
-                    = savedInstanceState
-                    .getBoolean("wasRunning");
-        }
+        countDownTimer = new MyCountDownTimer(breakTime * 1000, 1);
+        beepSound321 = MediaPlayer.create(getApplicationContext(), R.raw.sound321);
+        beepSound0 = MediaPlayer.create(getApplicationContext(), R.raw.sound0);
 
         repCount = repCountStart;
         setRepText(repCount);
 
-        runTimer();
+        final TextView timeView
+                = (TextView)findViewById(
+                R.id.time_view);
+
+        timeView.setText("GO");
+
     }
 
     private void setRepText(int value)
@@ -75,47 +64,9 @@ public class MainActivity extends AppCompatActivity {
         repCountText.setText(value);
     }
 
-    // Save the state of the stopwatch
-    // if it's about to be destroyed.
-    @Override
-    public void onSaveInstanceState(
-            Bundle savedInstanceState)
-    {
-        super.onSaveInstanceState(savedInstanceState);
-
-        savedInstanceState
-                .putInt("seconds", seconds);
-        savedInstanceState
-                .putBoolean("running", running);
-        savedInstanceState
-                .putBoolean("wasRunning", wasRunning);
-    }
-
     public void setActivityBackgroundColor(int color) {
         View view = this.getWindow().getDecorView();
         view.setBackgroundColor(color);
-    }
-
-    // If the activity is paused,
-    // stop the stopwatch.
-    @Override
-    protected void onPause()
-    {
-        super.onPause();
-        wasRunning = running;
-        running = false;
-    }
-
-    // If the activity is resumed,
-    // start the stopwatch
-    // again if it was running previously.
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        if (wasRunning) {
-            running = true;
-        }
     }
 
     // Reset the stopwatch when
@@ -124,95 +75,96 @@ public class MainActivity extends AppCompatActivity {
     // when the Reset button is clicked.
     public void onClickReset(android.view.View view)
     {
-        running = true;
         repCount++;
 
         if (repCount > repCountEnd)
         {
-            seconds = restTime;
             repCount = repCountStart;
-            setRepText("Break!");
+            setRepText("Rest");
+            if (countDownTimer != null)
+            {
+                countDownTimer.cancel();
+                countDownTimer = new MyCountDownTimer(restTime * 1000, 1000);
+            }
+        }else if (repCount == repCountStart + 1)
+        {
+            setRepText(repCount);
+            if (countDownTimer != null)
+            {
+                countDownTimer.cancel();
+                countDownTimer = new MyCountDownTimer(breakTime * 1000, 1000);
+            }
+
         }else
         {
             setRepText(repCount);
-            seconds = breakTime;
         }
 
+        countDownTimer.start();
     }
 
     public void onClickResetActual(View view)
     {
-        running = false;
         repCount = repCountStart;
         setRepText(repCount);
-        seconds = 0;
-    }
+        countDownTimer.cancel();
 
-    // Sets the NUmber of seconds on the timer.
-    // The runTimer() method uses a Handler
-    // to increment the seconds and
-    // update the text view.
-    private void runTimer()
-    {
-
-        // Get the text view.
         final TextView timeView
                 = (TextView)findViewById(
                 R.id.time_view);
 
-        final TextView repCountText
+        timeView.setText("GO");
+    }
+
+    public class MyCountDownTimer extends CountDownTimer
+    {
+        public MyCountDownTimer(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+
+            int progress = (int) (millisUntilFinished/1000) + 1;
+            final TextView timeView
                 = (TextView)findViewById(
-                R.id.rep_count);
+                R.id.time_view);
 
+            timeView.setText(Integer.toString(progress));
 
-        // Creates a new Handler
-        final Handler handler
-                = new Handler();
-
-        // Call the post() method,
-        // passing in a new Runnable.
-        // The post() method processes
-        // code without a delay,
-        // so the code in the Runnable
-        // will run almost immediately.
-        handler.post(new Runnable() {
-            @Override
-
-            public void run()
+            if (progress <= 3)
             {
-                // Set the text view text.
-                timeView.setText(String.format(Locale.getDefault(),"%02d", seconds));
-
-                if (seconds == 0)
-                {
-                    setActivityBackgroundColor(Color.GREEN);
-                    timeView.setBackgroundColor(Color.GREEN);
-
-                    if (running)
-                    {
-                        running = false;
-
-                        if (repCount == repCountStart)
-                        {
-                            setRepText(repCount);
-                        }
-                    }
-                }else
-                {
-                    setActivityBackgroundColor(Color.RED);
-                    timeView.setBackgroundColor(Color.RED);
-                }
-
-                // If running is true, increment the
-                // seconds variable.
-                if (running) {
-                    seconds--;
-                }
-
-                // Post the code again
-                // with a delay of 1 second.
-                handler.postDelayed(this, 1000);
+                beepSound321.start();
             }
-        });
+
+            final ProgressBar progressCircle
+                    = (ProgressBar)findViewById(
+                    R.id.progress_circle);
+
+            progressCircle.setProgress((int)(millisUntilFinished / breakTime ));
+        }
+
+        @Override
+        public void onFinish() {
+            final TextView timeView
+                    = (TextView)findViewById(
+                    R.id.time_view);
+
+            timeView.setText("GO");
+
+            if (repCount == repCountStart)
+            {
+                setRepText(repCount);
+            }
+
+            final ProgressBar progressCircle
+                    = (ProgressBar)findViewById(
+                    R.id.progress_circle);
+
+            progressCircle.setProgress(0);
+
+            beepSound0.start();
+
+        }
     }
 }
